@@ -39,28 +39,30 @@ pattern = np.flip(permutations(group_size), axis=0)
 
 # initialize state
 
-state = np.zeros(size)
+state = np.array([0,0,0,1,1,1,1,0])
 all_states = np.zeros((n, size))
 
-state[1] = 1
+rule = state
 
 # update state according to rule
 
+# possible to apply rules all in one go?
+# does the impossibility imply something (complexity?)
 for i in range(n):
     
+    # save the current state
+    all_states[i] = state
+
     # separate state into groups of three (periodic boundaries)
     # [periodic bounds a problem? too small for structure?]
-    
-    repeated_states = np.hstack((state[state.size-1:],state,state[:1]))
-    
     # TODO: optimize if possible
+    repeated_states = np.hstack((state[state.size-1:],state,state[:1]))
     groups = np.array([repeated_states[i:i+group_size] for i in range(state.size)])
     
     # apply rule to each group, according to pattern
-    next_state = apply_rule(groups, pattern=pattern, rule=state).T
+    # TODO: get rid of that transpose
+    state = apply_rule(groups, pattern=pattern, rule=rule).T
 
-    all_states[i] = state
-    state = next_state
 
 plt.imshow(all_states)
 plt.show()
