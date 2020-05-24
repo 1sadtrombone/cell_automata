@@ -46,15 +46,21 @@ state[1] = 1
 
 # update state according to rule
 
-# separate state into groups of three (periodic boundaries)
-# [periodic bounds a problem? too small for structure?]
+for i in range(n):
+    
+    # separate state into groups of three (periodic boundaries)
+    # [periodic bounds a problem? too small for structure?]
+    
+    repeated_states = np.hstack((state[state.size-1:],state,state[:1]))
+    
+    # TODO: optimize if possible
+    groups = np.array([repeated_states[i:i+group_size] for i in range(state.size)])
+    
+    # apply rule to each group, according to pattern
+    next_state = apply_rule(groups, pattern=pattern, rule=state).T
 
-repeated_states = np.hstack((state[state.size-1:],state,state[:1]))
+    all_states[i] = state
+    state = next_state
 
-# TODO: optimize if possible
-groups = np.array([repeated_states[i:i+group_size] for i in range(state.size)])
-
-# apply rule to each group, according to pattern
-next_state = apply_rule(groups, pattern=pattern, rule=state).T
-
-
+plt.imshow(all_states)
+plt.show()
