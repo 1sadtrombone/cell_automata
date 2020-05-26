@@ -30,18 +30,18 @@ def apply_rule_to_group(group, pattern, rule):
 
 apply_rule = np.vectorize(apply_rule_to_group, excluded=["pattern","rule"], signature="(n)->()")
 
-number_of_types = 2
-size_power = 4
-size = number_of_types**size_power
-group_size = size_power
+number_of_types = 3
+group_size = 2
+size = number_of_types**group_size
+
 n = 50
 
 # flipped to match Wolfram's paper
 pattern = np.flip(combinations(group_size, number_of_types), axis=0)
 
 # initialize state
-initial_state = np.random.randint(number_of_types, size=size)
-#initial_state = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0])
+#initial_state = np.random.randint(number_of_types, size=size)
+initial_state = np.array([0,2,0,2,0,2,1,0,0])
 initial_state[-1] = 0 # to ensure "legality"
 
 state = initial_state
