@@ -7,38 +7,42 @@ import matplotlib.pyplot as plt
 # except the rule is changed at each step to the state
 # of the previous step
 
-def permutations(n):
-    # gives all pemutations of n bits
+def combinations(n, k):
+    # gives all combinations of n integers from 0 to k
     if n != int(n):
-        raise ValueError("permutations encountered a non-int number of bits")
+        raise ValueError("combinations encountered a non-int number of bits")
     if n < 1:
-        raise ValueError("permutations encountered a negative number of bits")
+        raise ValueError("combinations encountered a negative number of bits")
     if n == 1:
-        ps = np.zeros((2,1))
-        ps[1] = 1
+        ps = np.arange(k).reshape((-1,1))
         return ps
     else:
-        subarrs = np.vstack((permutations(n-1),permutations(n-1)))
-        ps = np.zeros((subarrs.shape[0],1))
-        ps[ps.size//2:] = 1
+        subarrs = np.tile(combinations(n-1, k), (k,1))
+        ps = np.arange(k)
+        ps = np.repeat(ps,subarrs.shape[0]//k).reshape((-1,1))
+
         return np.hstack((ps, subarrs))
 
 def apply_rule_to_group(group, pattern, rule):
+    if pattern.shape[0] != rule.shape[0]:
+        raise ValueError("apply rule encountered length of pattern != length of rule")
     return rule[np.where(np.prod(pattern==group,axis=1))]
 
 apply_rule = np.vectorize(apply_rule_to_group, excluded=["pattern","rule"], signature="(n)->()")
 
-size = 2**3
-group_size = int(np.log2(size))
-if group_size != np.log2(size):
-    raise ValueError("size must be a power of 2")
-n = 100
+number_of_types = 2
+size_power = 4
+size = number_of_types**size_power
+group_size = size_power
+n = 50
 
 # flipped to match Wolfram's paper
-pattern = np.flip(permutations(group_size), axis=0)
+pattern = np.flip(combinations(group_size, number_of_types), axis=0)
 
 # initialize state
-initial_state = np.array([0,0,0,1,1,1,1,0])
+initial_state = np.random.randint(number_of_types, size=size)
+#initial_state = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0])
+initial_state[-1] = 0 # to ensure "legality"
 
 state = initial_state
 all_states = np.zeros((n, size))
@@ -81,11 +85,12 @@ for i in range(n):
     state_classic = apply_rule(groups, pattern=pattern, rule=rule_classic).T
 
 
+cmap = 'tab10'
 
 plt.subplot(1,2,1)
-plt.title("Rule depends on state")
-plt.imshow(all_states)
+plt.title("Rule is State")
+plt.imshow(all_states, cmap=cmap)
 plt.subplot(1,2,2)
-plt.title("Classic cellular automaton")
-plt.imshow(all_states_classic)
+plt.title("Constant Rule")
+plt.imshow(all_states_classic, cmap=cmap)
 plt.show()
