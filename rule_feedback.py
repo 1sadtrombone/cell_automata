@@ -10,9 +10,11 @@ import matplotlib.pyplot as plt
 def combinations(n, k):
     # gives all combinations of n integers from 0 to k
     if n != int(n):
-        raise ValueError("combinations encountered a non-int number of bits")
+        raise ValueError("combinations encountered a non-int number of integers")
     if n < 1:
-        raise ValueError("combinations encountered a negative number of bits")
+        raise ValueError("combinations encountered a negative number of integers")
+    if k != int(k):
+        raise ValueError("combinations encountered a non-int parameter k")
     if n == 1:
         ps = np.arange(k).reshape((-1,1))
         return ps
@@ -30,7 +32,7 @@ def apply_rule_to_group(group, pattern, rule):
 
 apply_rule = np.vectorize(apply_rule_to_group, excluded=["pattern","rule"], signature="(n)->()")
 
-number_of_types = 3
+number_of_types = 4
 group_size = 2
 size = number_of_types**group_size
 
@@ -40,8 +42,10 @@ n = 50
 pattern = np.flip(combinations(group_size, number_of_types), axis=0)
 
 # initialize state
+seed_size = 10
+initial_state = np.hstack((np.zeros((size-seed_size)//2), np.random.randint(number_of_types, size=seed_size), np.zeros((size-seed_size)//2)))
 #initial_state = np.random.randint(number_of_types, size=size)
-initial_state = np.array([0,2,0,2,0,2,1,0,0])
+#initial_state = np.array([0,2,0,2,0,2,1,0,0])
 initial_state[-1] = 0 # to ensure "legality"
 
 state = initial_state
@@ -89,8 +93,8 @@ cmap = 'tab10'
 
 plt.subplot(1,2,1)
 plt.title("Rule is State")
-plt.imshow(all_states, cmap=cmap)
+plt.imshow(all_states, cmap=cmap, aspect='auto')
 plt.subplot(1,2,2)
 plt.title("Constant Rule")
-plt.imshow(all_states_classic, cmap=cmap)
+plt.imshow(all_states_classic, cmap=cmap, aspect='auto')
 plt.show()
