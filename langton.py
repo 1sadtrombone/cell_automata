@@ -94,7 +94,7 @@ def entropy(timeseries, number_of_types):
     for i in range(number_of_types):
         p = np.sum(timeseries == i) / timeseries.size
         if p > 0:
-            entropy -= p * np.log(p)
+            entropy -= p * np.log2(p)
 
     return entropy
 
@@ -111,7 +111,7 @@ def mutual_info(timeseries_1, timeseries_2, number_of_types):
         for j in range(number_of_types):
             p = np.sum((timeseries_1 == i) * (timeseries_2 == j)) / timeseries_1.size
             if p > 0:
-                mutual += p * np.log(p)
+                mutual += p * np.log2(p)
     mutual += entropy(timeseries_1, number_of_types) + entropy(timeseries_2, number_of_types)
     return mutual
 
@@ -138,26 +138,24 @@ def show_cells(all_states, cmap='tab10'):
 if __name__=='__main__':
 
     plot_dir = 'plots'
-    name = 'long_run'
+    name = 'final_run'
     plot_prefix = f'{plot_dir}/{name}'
 
-    N = 500 # number of runs
-    n = 200 # time steps per run
+    N = 30 # number of runs
+    n = 500 # time steps per run
+    size = 128 # system size
 
     k = 4
     rng = 2
     max_lamb = 1 - 1/k
 
-    init = np.random.randint(k, size=128)
+    init = np.random.randint(k, size=size)
     
     entropies = np.zeros(N)
     mutual_infos = np.zeros(N)
     lambs = np.zeros(N)
     
     for i in range(N):
-
-        if i%10 == 0:
-            print(i)
 
         lamb = np.random.uniform(0,max_lamb)
         rule = random_rule(rng, k, lamb=lamb)
@@ -167,9 +165,30 @@ if __name__=='__main__':
         entropies[i] = avg_entropy(cells, k)
         mutual_infos[i] = avg_mutual_info(cells, k)
         lambs[i] = lamb
+        
+        if mutual_infos[i] > 0.5:
+            print(i, "high news")
+            plt.imshow(cells, cmap='tab10')
+            plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
+            plt.tight_layout()
+            plt.savefig(f'{plot_prefix}_highMI_example_{i}')
 
-        if mutual_infos[i] == np.max(mutual_infos):
-            best_run = cells
+        if entropies[i] < 0.2 and entropies[i] > 0.1:
+            print(i, "low H")
+            plt.imshow(cells, cmap='tab10')
+            plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
+            plt.tight_layout()
+            plt.savefig(f'{plot_prefix}_lowH_example_{i}')
+
+        if entropies[i] > 1:
+            print(i, "high H")
+            plt.imshow(cells, cmap='tab10')
+            plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
+            plt.tight_layout()
+            plt.savefig(f'{plot_prefix}_highH_example_{i}')
+
+
+            
 
     plt.plot(lambs, entropies, 'k.')
     plt.savefig(f'{plot_prefix}_avg_entropy')
@@ -181,9 +200,16 @@ if __name__=='__main__':
 
     plt.plot(entropies/np.max(entropies), mutual_infos, 'k.')
     plt.savefig(f'{plot_prefix}_the_plot')
+    plt.xlabel('Average Entropy')
+    plt.ylabel('Average News')
     plt.clf()
-        
-    show_cells(best_run)
+
+    plt.plot(entropies, mutual_infos, 'k.')
+    plt.xlabel('Average Entropy')
+    plt.ylabel('Average News')
+    plt.savefig(f'{plot_prefix}_the_plot_unnormed')
+    plt.clf()
+    
     
     '''
     k = 3
