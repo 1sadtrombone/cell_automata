@@ -138,21 +138,25 @@ def show_cells(all_states, cmap='tab10'):
 if __name__=='__main__':
 
     plot_dir = 'plots'
-    name = 'final_run'
+    name = 'errorbars'
     plot_prefix = f'{plot_dir}/{name}'
 
-    N = 200 # number of runs
+    N = 100 # number of runs
     n = 500 # time steps per run
     size = 128 # system size
+    nums = 10 # number of different ICs 
 
     k = 4
     rng = 2
     max_lamb = 1 - 1/k
 
-    init = np.random.randint(k, size=size)
+    inits = np.random.randint(k, size=(nums,size))
     
     entropies = np.zeros(N)
     mutual_infos = np.zeros(N)
+    entropies_err = np.zeros(N)
+    mutual_infos_err = np.zeros(N)
+    
     lambs = np.zeros(N)
     
     for i in range(N):
@@ -160,45 +164,40 @@ if __name__=='__main__':
         lamb = np.random.uniform(0,max_lamb)
         rule = random_rule(rng, k, lamb=lamb)
 
-        cells = run_cell_automaton(init, rule, k, n)
+        
+        point_entropies = np.zeros(nums)
+        point_mutual_infos = np.zeros(nums)
+        
+        for j in range(nums):
+            cells = run_cell_automaton(inits[j], rule, k, n)
 
-        entropies[i] = avg_entropy(cells, k)
-        mutual_infos[i] = avg_mutual_info(cells, k)
+            point_entropies[j] = avg_entropy(cells, k)
+            point_mutual_infos[j] = avg_mutual_info(cells, k)
+
+
+        entropies[i] = np.mean(point_entropies)
+        mutual_infos[i] = np.mean(point_mutual_infos)
+        entropies_err[i] = np.std(point_entropies) / np.sqrt(nums)
+        mutual_infos_err[i] = np.std(point_mutual_infos) / np.sqrt(nums)
+        
         lambs[i] = lamb
 
-        if entropies[i] < 0.5 and entropies[i] > 0.2:
-            print(i, "low H")
-            plt.imshow(cells, cmap='tab10')
-            plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
-            plt.tight_layout()
-            plt.savefig(f'{plot_prefix}_lowH_example_{i}', dpi=600)
-            plt.clf()
-            exit()
-
-    plt.plot(lambs, entropies, 'k.')
+    plt.errorbar(lambs, entropies, yerr=entropies_err,fmt= 'k.')
     plt.tight_layout()
     plt.savefig(f'{plot_prefix}_avg_entropy')
     plt.clf()
     
-    plt.plot(lambs, mutual_infos, 'k.')
+    plt.errorbar(lambs, mutual_infos, yerr=mutual_infos_err, fmt='k.')
     plt.tight_layout()
     plt.savefig(f'{plot_prefix}_avg_mutual_info')
     plt.clf()
 
-    plt.plot(entropies/np.max(entropies), mutual_infos, 'k.')
+    plt.errorbar(entropies, mutual_infos, xerr=entropies_err, yerr=mutual_infos_err, fmt='k.')
     plt.xlabel('Average Entropy')
     plt.ylabel('Average News')
     plt.tight_layout()
     plt.savefig(f'{plot_prefix}_the_plot')
-    plt.clf()
-
-    plt.plot(entropies, mutual_infos, 'k.')
-    plt.xlabel('Average Entropy')
-    plt.ylabel('Average News')
-    plt.tight_layout()
-    plt.savefig(f'{plot_prefix}_the_plot_unnormed')
-    plt.clf()
-    
+    plt.clf()    
     
     '''
     k = 3
