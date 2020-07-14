@@ -141,7 +141,7 @@ if __name__=='__main__':
     name = 'final_run'
     plot_prefix = f'{plot_dir}/{name}'
 
-    N = 30 # number of runs
+    N = 200 # number of runs
     n = 500 # time steps per run
     size = 128 # system size
 
@@ -165,48 +165,37 @@ if __name__=='__main__':
         entropies[i] = avg_entropy(cells, k)
         mutual_infos[i] = avg_mutual_info(cells, k)
         lambs[i] = lamb
-        
-        if mutual_infos[i] > 0.5:
-            print(i, "high news")
-            plt.imshow(cells, cmap='tab10')
-            plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
-            plt.tight_layout()
-            plt.savefig(f'{plot_prefix}_highMI_example_{i}')
 
-        if entropies[i] < 0.2 and entropies[i] > 0.1:
+        if entropies[i] < 0.5 and entropies[i] > 0.2:
             print(i, "low H")
             plt.imshow(cells, cmap='tab10')
             plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
             plt.tight_layout()
-            plt.savefig(f'{plot_prefix}_lowH_example_{i}')
-
-        if entropies[i] > 1:
-            print(i, "high H")
-            plt.imshow(cells, cmap='tab10')
-            plt.title(f'$\lambda$:{lamb} \nentropy:{entropies[i]} \nmutual info:{mutual_infos[i]}')
-            plt.tight_layout()
-            plt.savefig(f'{plot_prefix}_highH_example_{i}')
-
-
-            
+            plt.savefig(f'{plot_prefix}_lowH_example_{i}', dpi=600)
+            plt.clf()
+            exit()
 
     plt.plot(lambs, entropies, 'k.')
+    plt.tight_layout()
     plt.savefig(f'{plot_prefix}_avg_entropy')
     plt.clf()
     
     plt.plot(lambs, mutual_infos, 'k.')
+    plt.tight_layout()
     plt.savefig(f'{plot_prefix}_avg_mutual_info')
     plt.clf()
 
     plt.plot(entropies/np.max(entropies), mutual_infos, 'k.')
-    plt.savefig(f'{plot_prefix}_the_plot')
     plt.xlabel('Average Entropy')
     plt.ylabel('Average News')
+    plt.tight_layout()
+    plt.savefig(f'{plot_prefix}_the_plot')
     plt.clf()
 
     plt.plot(entropies, mutual_infos, 'k.')
     plt.xlabel('Average Entropy')
     plt.ylabel('Average News')
+    plt.tight_layout()
     plt.savefig(f'{plot_prefix}_the_plot_unnormed')
     plt.clf()
     
