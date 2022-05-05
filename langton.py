@@ -160,6 +160,7 @@ if __name__=='__main__':
     lambs = np.zeros(N)
     
     for i in range(N):
+        print(f"{i+1}/{N}")
 
         lamb = np.random.uniform(0,max_lamb)
         rule = random_rule(rng, k, lamb=lamb)
